@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: batch-worker
+  namespace: demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: batch-worker
+  template:
+    metadata:
+      labels:
+        app: batch-worker
+    spec:
+      terminationGracePeriodSeconds: 0
+      # must match the pool label
+      nodeSelector:
+        team: batch
+      # must tolerate the pool taint
+      tolerations:
+        - key: team
+          operator: Equal
+          value: batch
+          effect: NoSchedule
+      containers:
+        - name: worker
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi

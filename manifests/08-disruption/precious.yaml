@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: precious
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: precious
+  template:
+    metadata:
+      labels:
+        app: precious
+      annotations:
+        # blocks voluntary disruption
+        karpenter.sh/do-not-disrupt: "true"
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: app
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi

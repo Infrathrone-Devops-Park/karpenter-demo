@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: big-pod
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: big-pod
+  template:
+    metadata:
+      labels:
+        app: big-pod
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: app
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            requests:
+              cpu: "3"
+              memory: 256Mi

@@ -1,0 +1,25 @@
+# server dry-run only; never applied
+apiVersion: v1
+kind: PodTemplate
+metadata:
+  name: buffer-chunk
+  namespace: demo
+template:
+  spec:
+    containers:
+      - name: pause
+        image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+        resources:
+          requests:
+            cpu: 500m
+            memory: 256Mi
+---
+apiVersion: autoscaling.x-k8s.io/v1beta1
+kind: CapacityBuffer
+metadata:
+  name: warm-pool
+  namespace: demo
+spec:
+  podTemplateRef:
+    name: buffer-chunk
+  replicas: 2

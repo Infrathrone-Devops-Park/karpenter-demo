@@ -1,0 +1,20 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: default
+spec:
+  role: karpenter-demo-karpenter-node
+  amiSelectorTerms:
+    # newer pinned release: drift
+    - alias: al2023@v20261003
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: karpenter-demo
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: karpenter-demo
+  kubelet:
+    # prefix delegation is on
+    maxPods: 110
+  tags:
+    Project: karpenter-demo

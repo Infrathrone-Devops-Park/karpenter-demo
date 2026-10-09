@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab3-pinned
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lab3-pinned
+  template:
+    metadata:
+      labels:
+        app: lab3-pinned
+    spec:
+      terminationGracePeriodSeconds: 0
+      nodeSelector:
+        karpenter.sh/nodepool: lab3-broken
+      containers:
+        - name: pause
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi

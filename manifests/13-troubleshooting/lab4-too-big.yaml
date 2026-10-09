@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab4-too-big
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lab4-too-big
+  template:
+    metadata:
+      labels:
+        app: lab4-too-big
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: pause
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            # planted fault: max is 4 vCPU
+            requests:
+              cpu: "8"
+              memory: 1Gi

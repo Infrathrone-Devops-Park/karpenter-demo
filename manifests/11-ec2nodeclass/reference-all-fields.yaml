@@ -1,0 +1,77 @@
+# server dry-run only; never applied
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: reference-only
+spec:
+  # exactly one of role / instanceProfile
+  role: karpenter-demo-karpenter-node
+  amiFamily: AL2023
+  amiSelectorTerms:
+    - alias: al2023@v20260930
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: karpenter-demo
+    - id: subnet-0123456789abcdef0
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: karpenter-demo
+    - name: my-extra-sg
+  capacityReservationSelectorTerms:
+    - tags:
+        purpose: karpenter-demo
+  kubelet:
+    maxPods: 110
+    podsPerCore: 20
+    systemReserved:
+      cpu: 100m
+      memory: 100Mi
+      ephemeral-storage: 1Gi
+    kubeReserved:
+      cpu: 200m
+      memory: 1Gi
+      ephemeral-storage: 3Gi
+    evictionHard:
+      memory.available: 5%
+      nodefs.available: 10%
+      nodefs.inodesFree: 10%
+    evictionSoft:
+      memory.available: 500Mi
+      nodefs.available: 15%
+    evictionSoftGracePeriod:
+      memory.available: 1m
+      nodefs.available: 1m30s
+    evictionMaxPodGracePeriod: 60
+    imageGCHighThresholdPercent: 85
+    imageGCLowThresholdPercent: 80
+    cpuCFSQuota: true
+    clusterDNS: ["172.20.0.10"]
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      rootVolume: true
+      ebs:
+        volumeSize: 50Gi
+        volumeType: gp3
+        iops: 3000
+        throughput: 125
+        encrypted: true
+        deleteOnTermination: true
+  instanceStorePolicy: RAID0
+  metadataOptions:
+    httpEndpoint: enabled
+    httpProtocolIPv6: disabled
+    httpPutResponseHopLimit: 1
+    httpTokens: required
+  detailedMonitoring: true
+  associatePublicIPAddress: false
+  # merged with generated NodeConfig
+  userData: |
+    apiVersion: node.eks.aws/v1alpha1
+    kind: NodeConfig
+    spec:
+      kubelet:
+        config:
+          registryPullQPS: 10
+  tags:
+    Project: karpenter-demo
+    team: platform

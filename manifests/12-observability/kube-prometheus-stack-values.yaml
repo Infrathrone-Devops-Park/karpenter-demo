@@ -1,0 +1,131 @@
+# kube-prometheus-stack 92.2.0, demo footprint
+# everything except node-exporter: system node
+
+alertmanager:
+  enabled: false
+
+# not scrapeable on EKS
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: false
+    etcd: false
+    kubeControllerManager: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeProxy: false
+
+prometheusOperator:
+  nodeSelector:
+    role: system
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+  admissionWebhooks:
+    patch:
+      nodeSelector:
+        role: system
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+
+prometheus:
+  prometheusSpec:
+    nodeSelector:
+      role: system
+    tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+    retention: 6h
+    retentionSize: 1GB
+    scrapeInterval: 30s
+    # scrape all monitors, no release label
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    scrapeConfigSelectorNilUsesHelmValues: false
+    # emptyDir only, no PVs
+    storageSpec: {}
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        memory: 1536Mi
+
+grafana:
+  enabled: true
+  # demo only, port-forward access
+  adminPassword: karpenter-demo
+  defaultDashboardsEnabled: true
+  persistence:
+    enabled: false
+  nodeSelector:
+    role: system
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 384Mi
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: karpenter
+          orgId: 1
+          folder: Karpenter
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/karpenter
+  dashboards:
+    karpenter:
+      karpenter-capacity:
+        url: https://raw.githubusercontent.com/aws/karpenter-provider-aws/v1.14.1/website/content/en/docs/getting-started/getting-started-with-karpenter/karpenter-capacity-dashboard.json
+      karpenter-performance:
+        url: https://raw.githubusercontent.com/aws/karpenter-provider-aws/v1.14.1/website/content/en/docs/getting-started/getting-started-with-karpenter/karpenter-performance-dashboard.json
+
+kube-state-metrics:
+  nodeSelector:
+    role: system
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+# runs on every node
+prometheus-node-exporter:
+  tolerations:
+    - operator: Exists
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 64Mi

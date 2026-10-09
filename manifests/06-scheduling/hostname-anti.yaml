@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: one-per-node
+  namespace: demo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: one-per-node
+  template:
+    metadata:
+      labels:
+        app: one-per-node
+    spec:
+      terminationGracePeriodSeconds: 0
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app: one-per-node
+      containers:
+        - name: app
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi

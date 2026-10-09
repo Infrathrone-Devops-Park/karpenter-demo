@@ -1,0 +1,15 @@
+apiVersion: karpenter.sh/v1alpha1
+kind: NodeOverlay
+metadata:
+  name: prefer-m6i-large
+spec:
+  weight: 10
+  requirements:
+    - key: node.kubernetes.io/instance-type
+      operator: In
+      values: ["m6i.large"]
+    - key: karpenter.sh/capacity-type
+      operator: In
+      values: ["on-demand"]
+  # e.g. covered by a Savings Plan
+  price: "0.0001"

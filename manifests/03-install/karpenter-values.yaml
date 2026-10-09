@@ -1,0 +1,30 @@
+# Karpenter 1.14.1 chart values
+# clusterName/endpoint/queue set via --set
+
+# only one non-Karpenter node
+replicas: 1
+
+nodeSelector:
+  karpenter.sh/controller: "true"
+
+# chart default, kept explicit
+tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+
+# coredns runs on system node
+dnsPolicy: ClusterFirst
+
+logLevel: info
+
+controller:
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+
+# needs ServiceMonitor CRD first
+serviceMonitor:
+  enabled: true

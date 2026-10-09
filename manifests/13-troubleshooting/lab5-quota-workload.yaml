@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab5-quota
+  namespace: demo
+spec:
+  # one 4 vCPU node per pod
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lab5-quota
+  template:
+    metadata:
+      labels:
+        app: lab5-quota
+    spec:
+      terminationGracePeriodSeconds: 0
+      nodeSelector:
+        karpenter.sh/nodepool: lab5-quota
+      containers:
+        - name: pause
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            requests:
+              cpu: "3"
+              memory: 512Mi

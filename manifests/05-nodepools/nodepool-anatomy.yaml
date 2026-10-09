@@ -1,0 +1,60 @@
+# Reference only: server dry-run, never applied
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: anatomy
+spec:
+  template:
+    metadata:
+      # copied onto every node
+      labels:
+        team: payments
+      annotations:
+        example.com/cost-center: "1234"
+    spec:
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: default
+      # pods must tolerate these
+      taints:
+        - key: dedicated
+          value: payments
+          effect: NoSchedule
+      # removed later by an agent
+      startupTaints:
+        - key: example.com/agent-not-ready
+          effect: NoExecute
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["spot", "on-demand"]
+        - key: karpenter.k8s.aws/instance-family
+          operator: In
+          values: ["c6a", "c6i", "m6a", "m6i"]
+          minValues: 2
+        - key: karpenter.k8s.aws/instance-cpu
+          operator: Lte
+          values: ["4"]
+      # forceful max node lifetime
+      expireAfter: 168h
+      # max drain time, then force
+      terminationGracePeriod: 30m
+  limits:
+    cpu: "8"
+    memory: 32Gi
+    nodes: "4"
+  weight: 20
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 5m
+    budgets:
+      - nodes: "20%"
+      # no drift during business hours
+      - nodes: "0"
+        reasons: ["Drifted"]
+        schedule: "0 3 * * mon-fri"
+        duration: 10h

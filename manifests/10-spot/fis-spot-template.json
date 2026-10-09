@@ -1,0 +1,36 @@
+{
+  "description": "Interrupt one Karpenter spot node (karpenter-demo)",
+  "roleArn": "",
+  "stopConditions": [
+    { "source": "none" }
+  ],
+  "targets": {
+    "karpenterSpot": {
+      "resourceType": "aws:ec2:spot-instance",
+      "resourceTags": {
+        "karpenter.sh/nodepool": "default",
+        "eks:eks-cluster-name": "karpenter-demo"
+      },
+      "filters": [
+        { "path": "State.Name", "values": ["running"] }
+      ],
+      "selectionMode": "COUNT(1)"
+    }
+  },
+  "actions": {
+    "interruptSpot": {
+      "actionId": "aws:ec2:send-spot-instance-interruptions",
+      "description": "2 minute spot interruption notice",
+      "parameters": {
+        "durationBeforeInterruption": "PT2M"
+      },
+      "targets": {
+        "SpotInstances": "karpenterSpot"
+      }
+    }
+  },
+  "tags": {
+    "Name": "karpenter-spot-demo",
+    "Project": "karpenter-demo"
+  }
+}

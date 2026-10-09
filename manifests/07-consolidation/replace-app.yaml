@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: replace-app
+  namespace: demo
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: replace-app
+  template:
+    metadata:
+      labels:
+        app: replace-app
+    spec:
+      terminationGracePeriodSeconds: 0
+      nodeSelector:
+        karpenter.sh/nodepool: od-replace
+      containers:
+        - name: app
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi

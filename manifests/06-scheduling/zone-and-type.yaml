@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pinned
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pinned
+  template:
+    metadata:
+      labels:
+        app: pinned
+    spec:
+      terminationGracePeriodSeconds: 0
+      nodeSelector:
+        topology.kubernetes.io/zone: ap-south-1b
+        node.kubernetes.io/instance-type: c6a.large
+        karpenter.sh/capacity-type: spot
+      containers:
+        - name: app
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi

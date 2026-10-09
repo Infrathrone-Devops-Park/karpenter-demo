@@ -1,0 +1,52 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: karpenter-demo-alerts
+  namespace: monitoring
+spec:
+  groups:
+    - name: karpenter
+      rules:
+        - alert: KarpenterControllerDown
+          expr: absent(up{job="karpenter"} == 1)
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: Karpenter metrics target is down
+        - alert: KarpenterPodsUnschedulable
+          expr: sum(karpenter_scheduler_unschedulable_pods_count) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Pods Karpenter cannot place
+        - alert: KarpenterNodePoolNearLimit
+          expr: |
+            karpenter_nodepools_usage{resource_type="cpu"}
+              / karpenter_nodepools_limit{resource_type="cpu"} > 0.8
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: NodePool above 80% of its CPU limit
+        - alert: KarpenterLaunchFailures
+          expr: sum by (reason) (increase(karpenter_cloudprovider_instance_launch_failures_total[10m])) > 0
+          labels:
+            severity: warning
+          annotations:
+            summary: EC2 launch failures (ICE, quota)
+        - alert: KarpenterCloudProviderErrors
+          expr: sum by (method, error) (rate(karpenter_cloudprovider_errors_total[5m])) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Cloud provider calls failing
+        - alert: KarpenterNodeClaimsNotReady
+          expr: sum(operator_nodeclaim_status_condition_count{type="Ready",status="False"}) > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: NodeClaims not Ready for 15m

@@ -1,0 +1,28 @@
+# Reference only: server dry-run
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: balanced-example
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: default
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: karpenter.k8s.aws/instance-category
+          operator: In
+          values: ["c", "m", "r"]
+        - key: karpenter.k8s.aws/instance-cpu
+          operator: In
+          values: ["2", "4"]
+  limits:
+    cpu: "4"
+  disruption:
+    # new in v1.14, no gate
+    consolidationPolicy: Balanced
+    consolidateAfter: 1m

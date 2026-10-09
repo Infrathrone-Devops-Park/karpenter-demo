@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pdb-app
+  namespace: demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pdb-app
+  template:
+    metadata:
+      labels:
+        app: pdb-app
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: app
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pdb-app
+  namespace: demo
+spec:
+  # 2 of 2: zero evictions allowed
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: pdb-app

@@ -1,0 +1,12 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform.lock.hcl.bak
+crash.log
+*.kubeconfig
+.env
+research/
+.validation/
+.kube/
+*.plan

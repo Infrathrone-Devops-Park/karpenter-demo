@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: family-affinity
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: family-affinity
+  template:
+    metadata:
+      labels:
+        app: family-affinity
+    spec:
+      terminationGracePeriodSeconds: 0
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: karpenter.k8s.aws/instance-family
+                    operator: In
+                    values: ["m6a", "m6i"]
+                  - key: karpenter.sh/capacity-type
+                    operator: In
+                    values: ["spot"]
+          # treated as required first
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: topology.kubernetes.io/zone
+                    operator: In
+                    values: ["ap-south-1c"]
+      containers:
+        - name: app
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi

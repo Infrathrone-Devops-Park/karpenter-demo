@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab1-arm64
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lab1-arm64
+  template:
+    metadata:
+      labels:
+        app: lab1-arm64
+    spec:
+      terminationGracePeriodSeconds: 0
+      # planted fault: no arm64 pool
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      containers:
+        - name: pause
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi

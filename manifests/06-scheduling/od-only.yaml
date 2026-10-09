@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: od-only
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: od-only
+  template:
+    metadata:
+      labels:
+        app: od-only
+    spec:
+      terminationGracePeriodSeconds: 0
+      # capacity-type is well-known
+      nodeSelector:
+        karpenter.sh/capacity-type: on-demand
+      containers:
+        - name: app
+          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi

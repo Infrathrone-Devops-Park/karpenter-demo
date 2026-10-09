@@ -1,0 +1,53 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: bottlerocket
+spec:
+  role: karpenter-demo-karpenter-node
+  amiSelectorTerms:
+    # pinned; check SSM first
+    - alias: bottlerocket@v1.65.0
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: karpenter-demo
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: karpenter-demo
+  blockDeviceMappings:
+    # OS volume
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: 4Gi
+        volumeType: gp3
+        encrypted: true
+        deleteOnTermination: true
+    # data volume: images, logs
+    - deviceName: /dev/xvdb
+      ebs:
+        volumeSize: 30Gi
+        volumeType: gp3
+        iops: 4000
+        throughput: 250
+        encrypted: true
+        deleteOnTermination: true
+  kubelet:
+    maxPods: 110
+    systemReserved:
+      cpu: 100m
+      memory: 256Mi
+    kubeReserved:
+      cpu: 150m
+      memory: 768Mi
+    evictionHard:
+      memory.available: 200Mi
+      nodefs.available: 10%
+  # defaults, shown explicitly
+  metadataOptions:
+    httpEndpoint: enabled
+    httpProtocolIPv6: disabled
+    httpPutResponseHopLimit: 1
+    httpTokens: required
+  detailedMonitoring: false
+  tags:
+    Project: karpenter-demo
+    os: bottlerocket

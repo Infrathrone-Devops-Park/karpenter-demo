@@ -1,0 +1,5 @@
+# layered on 03-install values
+settings:
+  featureGates:
+    staticCapacity: true
+    nodeOverlay: true
