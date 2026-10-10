@@ -141,6 +141,8 @@ aws eks describe-access-entry --cluster-name "$CLUSTER_NAME" --principal-arn "ar
 ```
 Expected: four policies `AmazonEKSWorkerNodePolicy`, `AmazonEC2ContainerRegistryPullOnly`, `AmazonEKS_CNI_Policy`, `AmazonSSMManagedInstanceCore`. Four access entries: `role/aws-service-role/eks.amazonaws.com/AWSServiceRoleForAmazonEKS`, `role/karpenter-demo-karpenter-node`, `role/system-eks-node-group-...` (the system node group) and the Terraform caller (`user/sai` here). The Karpenter node role entry shows `"Type": "EC2_LINUX"` and `"Groups": ["system:nodes"]`.
 
+Note: with CAST AI connected, a fifth entry `role/castai-eks-instance-karpenter-demo` is listed (its node role, unused in read-only mode).
+
 ### Step 13 — FIS role (for module 10)
 ```bash
 aws iam get-role --role-name karpenter-demo-fis-spot --query 'Role.AssumeRolePolicyDocument.Statement[0].Principal' --output json

@@ -123,7 +123,7 @@ q 'histogram_quantile(0.9, sum by (le) (rate(karpenter_pods_provisioning_startup
 Expected (values vary; counters are cumulative since the controller started):
 - One line per NodePool ever used, for example `{"nodepool":"default","reason":"provisioned"}` → `35`, plus `spot-first`, `team-batch`, `od-replace`, `bottlerocket`, ... from earlier modules, and `{"nodepool":"default","reason":"drifted"}` (replacements).
 - NodePool usage ratio `0.4` (4 of 10 CPU), with the full scrape label set (`job="karpenter"`, `pod=...`).
-- Per-node pod CPU requests: `3.16` on the spot node (6 x 500m + 160m DaemonSets), plus the system node (`t3a.large`, ~`1.12`, no `capacity_type`).
+- Per-node pod CPU requests: `3.16` on the spot node (6 x 500m + 160m DaemonSets), plus the system node (`t3a.large`, ~`1.12`, no `capacity_type`). With CAST AI connected read-only: `3.18` and `1.32`.
 - `{"capacity_type":"spot","phase":"Running"}` → `6`. Note: the scrape renames the metric's own `namespace` label to `exported_namespace` (`namespace` is always `kube-system`, the target's namespace).
 - p90 time from pod creation to running for pods that needed a new node: about `35` seconds.
 
@@ -141,7 +141,7 @@ Count log lines by level:
 kubectl logs -n kube-system -l app.kubernetes.io/name=karpenter -c controller --tail=-1 --since=30m \
   | jq -rR 'fromjson? | .level' | sort | uniq -c
 ```
-Expected: mostly `INFO` (validation run: 84 INFO, 39 ERROR). The `ERROR` lines are harmless `Reconciler error` / `NodePool.karpenter.sh "bottlerocket" not found` from the module 11 cleanup (pool deleted while its NodeClaim terminated).
+Expected: mostly `INFO` (validation run: 84 INFO, 39 ERROR). The `ERROR` lines are harmless `Reconciler error` / `NodePool.karpenter.sh "bottlerocket" not found` (also `budget-demo`, `expiring` if modules 08-09 ran within 30 min) from the module cleanups (pool deleted while its NodeClaim terminated).
 
 ### Step 8 — Events by reason
 ```bash
@@ -155,7 +155,7 @@ Expected: the first command lists recent Karpenter events: `Nominated` (pods), `
 kubectl -n demo scale deploy/inflate --replicas 0
 kubectl get nodeclaims -w
 ```
-Expected: after ~1 minute (`consolidateAfter: 1m`) the NodeClaims are deleted (empty-node consolidation). Ctrl-C when none remain (~1 min 45 s).
+Expected: after ~1 minute (`consolidateAfter: 1m`) the NodeClaims are deleted (empty-node consolidation). Ctrl-C when none remain (~1 min 45 s to 2.5 min).
 
 Then:
 ```bash
@@ -202,7 +202,7 @@ for i in $(seq 30); do
 done
 curl -s localhost:9090/api/v1/rules | jq -r '.data.groups[] | select(.name=="karpenter") | .rules[] | "\(.name)  \(.state)"'
 ```
-Expected: the loop ends after ~70 s (operator reload ~50 s, then first evaluation). Six rules, all `inactive`: `KarpenterControllerDown`, `KarpenterPodsUnschedulable`, `KarpenterNodePoolNearLimit`, `KarpenterLaunchFailures`, `KarpenterCloudProviderErrors`, `KarpenterNodeClaimsNotReady`. Module 13 (quota lab) will make `KarpenterLaunchFailures` fire.
+Expected: the loop ends after ~70 s (operator reload ~50 s, then first evaluation). Six rules, all `inactive`: `KarpenterControllerDown`, `KarpenterPodsUnschedulable`, `KarpenterNodePoolNearLimit`, `KarpenterLaunchFailures`, `KarpenterCloudProviderErrors`, `KarpenterNodeClaimsNotReady`. (`KarpenterCloudProviderErrors` ignores `NodeClaimNotFoundError`, which every node deletion produces.) Module 13 (quota lab) will make `KarpenterLaunchFailures` fire.
 
 ## Talking points
 

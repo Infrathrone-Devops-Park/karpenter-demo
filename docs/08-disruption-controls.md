@@ -89,7 +89,7 @@ Allow 1 node at a time for `Empty` and `Underutilized`, keep `Drifted` frozen.
 kubectl patch nodepool budget-demo --type merge -p '{"spec":{"disruption":{"budgets":[{"nodes":"1","reasons":["Empty","Underutilized"]},{"nodes":"0","reasons":["Drifted"]}]}}}'
 kubectl get nodeclaims -w
 ```
-Expected: within ~20 s (next loop + 15 s re-validation) the NodeClaim gets a deletion timestamp; gone about 35 s later (measured 21 s / 56 s). Log: `disrupting node(s)` with command `Empty/<id>: delete: nodepools=[budget-demo]: [ip-10-0-41-149.ap-south-1.compute.internal] (savings: $0.02)`. Ctrl-C when the list is empty.
+Expected: within ~20 s (next loop + 15 s re-validation) the NodeClaim gets a deletion timestamp; gone 35–60 s later (measured 21 s / 56 s, and 23 s / 82 s). Log: `disrupting node(s)` with command `Empty/<id>: delete: nodepools=[budget-demo]: [ip-10-0-41-149.ap-south-1.compute.internal] (savings: $0.02)`. Ctrl-C when the list is empty.
 
 ### Step 4 — A schedule-based budget (validated, not waited for)
 ```bash

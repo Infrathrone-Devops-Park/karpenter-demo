@@ -89,6 +89,8 @@ kubectl rollout status deployment/inflate -n demo --timeout=300s
 ```
 Expected: `nodeclaim.karpenter.sh/default-xxxxx condition met`, then `deployment "inflate" successfully rolled out`. The wait returned about 30 s after the scale. Pane 1 shows a new node with 5 pods and about 68% CPU allocated (`2660m/3920m`).
 
+Note: with CAST AI connected read-only, its `castai-spot-handler` DaemonSet adds one pod (20m CPU, 40Mi) to every spot node: `2680m/3920m`. Pods per node and the 7 + 3 split below are unchanged.
+
 ### Step 5 — Inspect the NodeClaim
 ```bash
 kubectl get nodeclaims -o wide

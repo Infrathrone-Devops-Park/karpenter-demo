@@ -134,7 +134,7 @@ kubectl wait nodeclaim "$NC" --for=delete --timeout=8m
 kubectl get nodeclaims -l karpenter.sh/nodepool=expiring
 kubectl get pods -n demo -l app=expire-app -o wide
 ```
-Expected: at exactly creation + 4 min (measured 17:28:31 -> 17:32:31) the NodeClaim gets a deletion timestamp; the wait returns when it is gone (+24 s). A **new** `expiring-xxxxx` NodeClaim already exists (created the same second, `READY Unknown`) (Karpenter provisions for pods on a deleting node right away); the pod was evicted and is Pending or Running on the new node. The `nodes: "0"` budget did not help: expiration is forceful. This new node will expire in 4 minutes too, so move on to Reset.
+Expected: at exactly creation + 4 min (measured 17:28:31 -> 17:32:31) the NodeClaim gets a deletion timestamp; the wait returns when it is gone (+24 s to +65 s). A **new** `expiring-xxxxx` NodeClaim already exists (created the same second, `READY Unknown`, or `True` if the old instance took a minute to go) (Karpenter provisions for pods on a deleting node right away); the pod was evicted and is Pending or Running on the new node. The `nodes: "0"` budget did not help: expiration is forceful. This new node will expire in 4 minutes too, so move on to Reset.
 
 ## Talking points
 - Drift is how Karpenter does node upgrades: change the desired state in Git, Karpenter converges the fleet.

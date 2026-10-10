@@ -37,7 +37,8 @@ spec:
           annotations:
             summary: EC2 launch failures (ICE, quota)
         - alert: KarpenterCloudProviderErrors
-          expr: sum by (method, error) (rate(karpenter_cloudprovider_errors_total[5m])) > 0
+          # not-found is normal after termination
+          expr: sum by (method, error) (rate(karpenter_cloudprovider_errors_total{error!="NodeClaimNotFoundError"}[5m])) > 0
           for: 10m
           labels:
             severity: warning

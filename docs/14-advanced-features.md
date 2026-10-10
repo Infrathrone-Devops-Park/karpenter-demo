@@ -119,7 +119,7 @@ Expected: `Release "karpenter" has been upgraded. Happy Helming!`, a new pod Rea
 kubectl apply -f manifests/14-advanced/static-nodepool.yaml
 kubectl get nodeclaims -l karpenter.sh/nodepool=static-demo -w
 ```
-Expected: within ~2 s a NodeClaim `static-demo-xxxxx` appears (Spot, 2 vCPU; validation run `c8i-flex.large`) and becomes `READY True` in ~34 s, although **no pod asked for it**. Ctrl-C.
+Expected: within ~2 s (up to ~15 s if the new controller is still taking the leader lease) a NodeClaim `static-demo-xxxxx` appears (Spot, 2 vCPU; validation run `c8i-flex.large`) and becomes `READY True` in ~34 s, although **no pod asked for it**. Ctrl-C.
 
 ```bash
 kubectl logs -n kube-system -l app.kubernetes.io/name=karpenter -c controller --tail=-1 --since=3m \
@@ -172,7 +172,7 @@ curl -s localhost:8080/metrics | grep '^karpenter_cloudprovider_instance_type_of
   | grep -E '"(m6i|c5a).large"' | grep on-demand
 kill $PF
 ```
-Expected: three `m6i.large` lines (one per zone) with the **overlay** price `0.0001`, and three `c5a.large` lines with its real list price `0.047`. The metric shows what Karpenter believes; the EC2 invoice still uses the real `m6i.large` price.
+Expected: three `m6i.large` lines (one per zone) with the **overlay** price `0.0001`, and three `c5a.large` lines with its real list price `0.047`. The metric shows what Karpenter believes; the EC2 invoice still uses the real `m6i.large` price. The metric refreshes on a timer: if `m6i.large` still shows its list price `0.101`, run the block again 30 s later.
 
 ### Step 9 — Clean up the overlay demo
 ```bash

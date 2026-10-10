@@ -212,14 +212,14 @@ MSG=$(jq -cn --arg id "$SPOT_ID" --arg acct "$AWS_ACCOUNT_ID" --arg region "$AWS
 echo "$MSG" | jq .
 aws sqs send-message --queue-url "$QUEUE_URL" --message-body "$MSG" --query MessageId --output text
 ```
-Expected: the pretty-printed JSON, then a message ID. Within ~1 s the same flow as Step 9 runs (re-run the Step 9 log command): `initiating delete from interruption message` with `messageKind spot_interrupted`, a replacement NodeClaim 1 s later, pods Running ~33 s later, old node gone ~33 s after the message. This time **Karpenter** terminates the instance; EC2 never reclaims it. Same-account IAM principals can send to the queue (their identity policy allows it).
+Expected: the pretty-printed JSON, then a message ID. Within ~1 s the same flow as Step 9 runs (re-run the Step 9 log command): `initiating delete from interruption message` with `messageKind spot_interrupted`, a replacement NodeClaim 1 s later, pods Running ~33 s later, old node gone 33–60 s after the message. This time **Karpenter** terminates the instance; EC2 never reclaims it. Same-account IAM principals can send to the queue (their identity policy allows it).
 
 ### Step 15 — Clean up
 ```bash
 kubectl delete -f manifests/10-spot/spot-workload.yaml
 kubectl get nodeclaims -w
 ```
-Expected: the deployment is deleted. About 1 min 40 s later (`consolidateAfter: 1m`) the empty Spot NodeClaim disappears. Press Ctrl-C when the watch shows no NodeClaims.
+Expected: the deployment is deleted. About 1 min 40 s to 2.5 min later (`consolidateAfter: 1m`) the empty Spot NodeClaim disappears. Press Ctrl-C when the watch shows no NodeClaims.
 
 ## Talking points
 

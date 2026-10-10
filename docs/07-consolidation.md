@@ -84,6 +84,8 @@ kubectl get nodeclaims -o wide
 ```
 Expected: in 30–45 s (measured 37 s), 2 NodeClaims from `default`, typically one 4-vCPU (7 pods) + one 2-vCPU (3 pods), usually `spot` (validation: `c6a.xlarge` + `c8i-flex.large`). `-o wide` adds `IMAGEID`, `ID`, `NODEPOOL`, `NODECLASS`, `DRIFTED`.
 
+Note: run straight after a reset, one launch can fail with `MaxSpotInstanceCountExceeded` (spot instances still shutting down count against the 8-vCPU quota). Karpenter retries within seconds; the rollout just takes about 90 s.
+
 ### Step 2 — Scale down and watch a delete
 ```bash
 kubectl scale deployment inflate -n demo --replicas 3

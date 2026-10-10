@@ -85,7 +85,6 @@ kubectl get ec2nodeclass default -o jsonpath='{.status}' \
 ```
 Expected:
 - `instanceProfile`: `karpenter-demo_<long number>`.
-- `instanceProfile`: `karpenter-demo_9299248092360466610` on this cluster.
 - `amis`: 5 entries named `amazon-eks-node-al2023-<arch>-<variant>-1.36-v20260930`: `x86_64-standard` (`ami-067d27d47f88c442a`), `arm64-standard`, `x86_64-neuron`, `arm64-nvidia`, `x86_64-nvidia`.
 - `subnets`: 3 entries, one per zone `ap-south-1a|b|c` (with `zoneID` `aps1-az1|2|3`).
 - `securityGroups`: 1 entry, `karpenter-demo-node-00baf0bc…`.
@@ -149,7 +148,7 @@ BR_NODE=$(kubectl get nodes -l karpenter.sh/nodepool=bottlerocket -o jsonpath='{
 kubectl get node "$BR_NODE" -o jsonpath='{.status.nodeInfo.osImage}{"  "}{.status.nodeInfo.containerRuntimeVersion}{"\n"}'
 kubectl get node "$BR_NODE" -o json | jq '{capacity: .status.capacity, allocatable: .status.allocatable}'
 ```
-Expected: `Bottlerocket OS 1.65.0 (aws-k8s-1.36)  containerd://2.2.7+bottlerocket`. Capacity `cpu "2"`, `pods "110"`, `ephemeral-storage "30654Mi"` (the 30Gi data volume). Allocatable CPU = 2000m − 100m system − 150m kube = **`1750m`**. Allocatable memory = capacity − 256Mi − 768Mi − 200Mi eviction: on c8i-flex.large `3905200Ki` → `2651824Ki` exactly.
+Expected: `Bottlerocket OS 1.65.0 (aws-k8s-1.36)  containerd://2.2.7+bottlerocket`. Capacity `cpu "2"`, `pods "110"`, `ephemeral-storage "30654Mi"` (the 30Gi data volume). Allocatable CPU = 2000m − 100m system − 150m kube = **`1750m`**. Allocatable memory = capacity − 256Mi − 768Mi − 200Mi eviction: on c8i-flex.large `3905200Ki` → `2651824Ki` (or `3905188Ki` → `2651812Ki`): always capacity − `1253376Ki`.
 
 ### Step 10 — Read the live kubelet config from the API server
 `configz` returns the running kubelet configuration. No SSH, works on Bottlerocket.

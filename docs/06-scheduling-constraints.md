@@ -135,7 +135,7 @@ kubectl get nodes -l karpenter.sh/nodepool -L "$KN_COLS"
 kubectl logs -n "$KARPENTER_NAMESPACE" deploy/karpenter -c controller --since=3m \
   | jq -rR 'fromjson? | select(.message=="created nodeclaim") | [.NodeClaim.name, (.requests.cpu), .["instance-types"]] | @tsv' | tail -1
 ```
-Expected: rollout in 30–45 s (measured 34 s). One node, an `.xlarge` type (4 vCPU), for example `c6a.xlarge` (validation) or `c8id.xlarge`. The log line shows the NodeClaim name, requested CPU `3160m` (3 for the pod + 160m DaemonSet overhead), and an instance-types list of only 4-vCPU types: `c5.xlarge, c5a.xlarge, c5d.xlarge, c5n.xlarge, c6a.xlarge and 34 other(s)`. Compare with the 2-vCPU-capable list of Step 6 (`c5.large, c5.xlarge, ... and 73 other(s)`).
+Expected: rollout in 30–45 s (measured 34 s). One node, an `.xlarge` type (4 vCPU), for example `c6a.xlarge` (validation) or `c8id.xlarge`. The log line shows the NodeClaim name, requested CPU `3160m` (3 for the pod + 160m DaemonSet overhead; `3180m` with CAST AI connected, its spot-handler DaemonSet adds 20m), and an instance-types list of only 4-vCPU types: `c5.xlarge, c5a.xlarge, c5d.xlarge, c5n.xlarge, c6a.xlarge and 34 other(s)`. Compare with the 2-vCPU-capable list of Step 6 (`c5.large, c5.xlarge, ... and 73 other(s)`).
 
 ## Talking points
 - Karpenter is not a second scheduler. It answers one question: "what node would make this pod schedulable, cheapest?"

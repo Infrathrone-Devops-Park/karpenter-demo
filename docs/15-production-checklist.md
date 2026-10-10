@@ -154,7 +154,7 @@ Expected: `Running On-Demand Standard (A, C, D, H, I, M, R, T, Z) instances  8.0
 ```bash
 kubectl get pods -A -o json | jq -r '.items[] | select([.spec.containers[].resources.requests.cpu] | any(. == null)) | "\(.metadata.namespace)/\(.metadata.name)"' | head -10
 ```
-Expected: three system pods without CPU requests: `kube-system/eks-pod-identity-agent-…`, `monitoring/kube-prometheus-stack-grafana-…`, `monitoring/prometheus-kube-prometheus-stack-prometheus-0`. Any app pod here is a Karpenter sizing risk.
+Expected: three system pods without CPU requests: `kube-system/eks-pod-identity-agent-…`, `monitoring/kube-prometheus-stack-grafana-…`, `monitoring/prometheus-kube-prometheus-stack-prometheus-0`. Any app pod here is a Karpenter sizing risk. With CAST AI connected, `castai-agent/castai-agent-cpvpa-…` is listed first. A DaemonSet pod on a node deleted seconds ago can show up briefly; re-run after a minute.
 
 ## Talking points
 

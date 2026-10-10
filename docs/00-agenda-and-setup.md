@@ -196,7 +196,7 @@ Confirms the BASELINE state from the previous session's reset.
 kubectl get nodepools,ec2nodeclasses,nodeclaims
 kubectl get deploy -n demo
 ```
-Expected: `nodepool.karpenter.sh/default` and `ec2nodeclass.karpenter.k8s.aws/default` with `READY True`, **no** nodeclaims, `inflate 0/0`. If anything differs, run `scripts/reset.sh`. In session 1 (before module 03) the first command fails with `the server doesn't have a resource type "nodepools"` (or, if kubectl still caches the old CRDs after a rehearsal uninstall, three `Error from server (NotFound): Unable to list "karpenter.sh/v1, Resource=nodepools"...` lines) and the second prints `No resources found in demo namespace.`: both expected.
+Expected: `nodepool.karpenter.sh/default` and `ec2nodeclass.karpenter.k8s.aws/default` with `READY True`, **no** nodeclaims, `inflate 0/0`. If anything differs, run `scripts/reset.sh`. In session 1 (before module 03) the first command fails with `the server doesn't have a resource type "nodepools"` (or, if kubectl still caches the old CRDs after a rehearsal uninstall, three `Error from server (NotFound): Unable to list "karpenter.sh/v1, Resource=nodepools"...` lines) and the second prints `No resources found in demo namespace.` (or `inflate 0/0` if a rehearsal left namespace `demo`): both expected.
 
 ### Step 7 — Grafana port-forward
 Leave this running in a spare tab for module 12.

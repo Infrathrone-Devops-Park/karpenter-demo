@@ -111,7 +111,7 @@ There is no Cluster Autoscaler and no Karpenter yet.
 ```bash
 kubectl get deploy -A
 ```
-Expected: five deployments, all ready: `kube-system/coredns 2/2`, `kube-system/metrics-server 2/2`, and in `monitoring` `kube-prometheus-stack-grafana`, `-kube-state-metrics`, `-operator` (each `1/1`). No `cluster-autoscaler`, no `karpenter`.
+Expected: five deployments, all ready: `kube-system/coredns 2/2`, `kube-system/metrics-server 2/2`, and in `monitoring` `kube-prometheus-stack-grafana`, `-kube-state-metrics`, `-operator` (each `1/1`). No `cluster-autoscaler`, no `karpenter`. If a rehearsal left namespace `demo`, `demo/inflate 0/0` is listed too.
 
 Note: if CAST AI is connected read-only (sibling castai-demo course), you also see `castai-agent/castai-agent` and `castai-agent/castai-agent-cpvpa` (`1/1`) and six `shop` deployments at `0/0`. Neither is an autoscaler.
 

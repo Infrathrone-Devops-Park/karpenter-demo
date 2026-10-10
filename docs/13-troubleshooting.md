@@ -209,7 +209,7 @@ sleep 20
 kubectl -n demo get events --field-selector reason=FailedScheduling -o json \
   | jq -r '.items[] | select(.source.component=="karpenter" and (.involvedObject.name|startswith("lab4"))) | .message' | sort -u | cut -c1-200
 ```
-Expected: pod `Pending`, no NodeClaim, and `Failed to schedule pod, no instance type has enough resources, requirements=karpenter.k8s.aws/ec2nodeclass In [default], karpenter.k8s.aws/instance-category In [c m r], karpenter.k8s.aws/instance-cpu …` (cut at 200 chars; requirements are sorted by key). The full message ends with `kubernetes.io/os In [linux], resources={"cpu":"8160m","memory":"1056Mi","pods":"5"}` (pod + 160m / 32Mi DaemonSet overhead).
+Expected: pod `Pending`, no NodeClaim, and `Failed to schedule pod, no instance type has enough resources, requirements=karpenter.k8s.aws/ec2nodeclass In [default], karpenter.k8s.aws/instance-category In [c m r], karpenter.k8s.aws/instance-cpu …` (cut at 200 chars; requirements are sorted by key). The full message ends with `kubernetes.io/os In [linux], resources={"cpu":"8160m","memory":"1056Mi","pods":"5"}` (pod + 160m / 32Mi DaemonSet overhead). With CAST AI connected its spot-handler DaemonSet adds one pod: `{"cpu":"8180m","memory":"1096Mi","pods":"6"}`.
 
 ### Step 4.2 — Fix
 Right-size the request to fit a 4-vCPU node (about 3.8 CPU allocatable after reservations and DaemonSets):
@@ -268,7 +268,7 @@ kill $PF
 Expected:
 - Two events (one per failed NodeClaim): `NodeClaim lab5-quota-xxxxx event: creating instance, insufficient capacity, with fleet error(s), VcpuLimitExceeded: You have requested more vCPU capacity than your current vCPU limit of 8 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/c…`
 - Log: two `failed launching nodeclaim` lines with the same error.
-- Metric: three lines, one per zone, `karpenter_cloudprovider_instance_launch_failures_total{capacity_type="on-demand",reason="VCPULimitExceeded",zone="ap-south-1a",zone_id="aps1-az1"} 39` (one count per offering in the failed fleet request, ~40 per zone).
+- Metric: three lines, one per zone, `karpenter_cloudprovider_instance_launch_failures_total{capacity_type="on-demand",reason="VCPULimitExceeded",zone="ap-south-1a",zone_id="aps1-az1"} 39` (one count per offering in the failed fleet request, ~40 per zone). A few `capacity_type="spot",reason="SpotQuotaExceeded"` lines can also show: Lab 4 launched while Lab 2's spot nodes still ran, and EC2 Fleet reported the over-quota spot pools it skipped.
 
 Karpenter treats `VcpuLimitExceeded` like an insufficient-capacity error: it deletes the failed NodeClaim, caches the instance type + zone + on-demand offering as **unavailable for 3 minutes**, and retries with other offerings. Once every 4-vCPU on-demand offering is cached (~20 s in), the log says `skipping, nodepool requirements filtered out all instance types` and the pending pod's event becomes `Failed to schedule pod, incompatible requirements, key karpenter.sh/nodepool, karpenter.sh/nodepool In [lab5-quota] not in karpenter.sh/nodepool In [default]`: the emptied pool is skipped like a broken one.
 
