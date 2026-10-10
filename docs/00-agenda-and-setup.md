@@ -129,6 +129,13 @@ Run every step below about 30 min before the audience arrives. The order of firs
 | Karpenter installed | **no** (installed live) | yes, 1/1 Running |
 | NodePool/EC2NodeClass | none | run `scripts/reset.sh` → BASELINE |
 | Karpenter nodes | none | none |
+| CAST AI (if castai-demo connected) | read-only only | read-only only |
+
+If CAST AI is connected in automation mode, its extra pods don't fit on the system node and Karpenter launches a node just for them, which breaks every BASELINE in this course. Park it first:
+
+```bash
+cd ../castai-demo && source scripts/env.sh && terraform -chdir=terraform plan -var phase=readonly -var autoscaler_enabled=false -out=ro.plan && terraform -chdir=terraform apply ro.plan && cd ../karpenter-demo && source scripts/env.sh
+```
 
 If you rehearsed module 03 already and want a clean live install, follow module 03 Reset ("rehearse from scratch"): delete the NodePools and EC2NodeClasses while Karpenter still runs, then `helm uninstall karpenter -n kube-system` and `helm uninstall karpenter-crd -n kube-system`. If you skip the uninstall, module 03 still works: every `helm upgrade --install` just becomes a new revision.
 

@@ -111,6 +111,8 @@ kubectl get pods -A -o wide --field-selector spec.nodeName="$(kubectl get nodes 
 ```
 Expected: `aws-node`, `kube-proxy`, `eks-pod-identity-agent`, `coredns` x2, `metrics-server` x2, and the five `monitoring` pods (grafana, kube-state-metrics, operator, node-exporter, `prometheus-kube-prometheus-stack-prometheus-0`): 12 pods. No `demo` pods.
 
+Note: with CAST AI connected read-only, two more pods run here (`castai-agent`, `castai-agent-cpvpa`): 14 pods.
+
 ### Step 9 — Pod Identity association for the controller
 ```bash
 aws eks list-pod-identity-associations --cluster-name "$CLUSTER_NAME" --query 'associations[].{Namespace:namespace,ServiceAccount:serviceAccount,Id:associationId}' --output table
